@@ -1,41 +1,54 @@
 #!/usr/bin/env python3
-import cairo
-import cairosvg
+import drawsvg as draw
 
 labelWidth = 370
 labelHeight = 120
 
 
 
-def addBorder(context, strokeSize = 0.01, margin = 0.05):
-    # Add border to the label
-    context.set_source_rgba(0, 0, 0, 1)
-    context.set_line_width(strokeSize)
-    context.move_to(margin, margin)
-    context.line_to(1 - margin, margin)
-    context.line_to(1 - margin, 1 - margin)
-    context.line_to(margin, 1 - margin)
-    context.line_to(margin, margin)
-    context.stroke()
+def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 4):
+    # Add border to the label with rounded corners on top
+    d.append(draw.Lines(-labelWidth/2 + margin + topCornerRadius, -labelHeight/2 + margin,
+                        labelWidth/2 - margin - topCornerRadius, -labelHeight/2 + margin,
+                        close=False,
+                fill='none',
+                stroke='black',
+                stroke_width=strokeSize))
+    
+    d.append(draw.Lines(labelWidth/2 - margin, -labelHeight/2 + margin + topCornerRadius,
+                        labelWidth/2 - margin, labelHeight/2 - margin,
+                        -labelWidth/2 + margin, labelHeight/2 - margin,
+                        -labelWidth/2 + margin, -labelHeight/2 + margin + topCornerRadius,
+                        close=False,
+                fill='none',
+                stroke='black',
+                stroke_width=strokeSize))
+    
+    d.append(draw.ArcLine(-labelWidth/2 + margin + topCornerRadius, -labelHeight/2 + margin + topCornerRadius,
+                          topCornerRadius, 90, 180,
+        stroke='black', stroke_width=strokeSize, fill='none'))
+    
+    d.append(draw.ArcLine(labelWidth/2 - margin - topCornerRadius, -labelHeight/2 + margin + topCornerRadius,
+                          topCornerRadius, 0, 90,
+        stroke='black', stroke_width=strokeSize, fill='none'))
 
 
 def generateLabel():
 
+    # Create a new SVG drawing
+    d = draw.Drawing(labelWidth, labelHeight, origin='center')
 
-    # label dimentions: 37mm by 12mm
-    with cairo.SVGSurface("label.svg", labelWidth, labelHeight) as surface:
-        context = cairo.Context(surface)
-        context.scale(labelWidth, labelHeight)
+    # Add border to the label
+    addBorder(d)
 
-        addBorder(context)
+    # Add text to the label
+    d.append(draw.Text("Hello World", 0, 0, 10, center=1))
 
-        # context.set_source_rgba(0, 0, 0, 1)
-        # context.set_line_width(0.05)
-        # context.move_to(0, 0)
-        # context.line_to(0.9, 0.9)
-        # context.stroke()
-    
-    # cairosvg.svg2png(url="label.svg", write_to="label.png", output_width=labelWidth)
+    # Save the drawing to a file
+    d.save_svg('label.svg')
+
+    # Save the drawing to a file
+    # d.savePng('label.png')
 
 
 if __name__ == '__main__':
