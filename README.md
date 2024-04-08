@@ -1,4 +1,8 @@
 
+# TODO
+- Export as a raised STL so that the label can be 3d printed?
+
+
 
 How to build the proper environnement:
 ```bash

@@ -8,6 +8,7 @@ from OCC.Core.BRep import BRep_Builder
 from OCC.Core.STEPControl import STEPControl_Reader
 from OCC.Display.SimpleGui import init_display
 
+from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 
 labelWidth = 370
 labelHeight = 120
@@ -82,11 +83,14 @@ def addNut(d):
 
     stepReader = STEPControl_Reader()
     stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
+    # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
     stepReader.TransferRoot()
     myshape = stepReader.Shape()
 
     myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
+    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
+    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., .6, 0.7)))
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
     myAlgo.Update()
@@ -100,13 +104,9 @@ def addNut(d):
     aBuilder.Add(aCompound, aHLRToShape.VCompound())
     aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())
 
+    renderer = UpdatedOffscreenRenderer()
+    renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt.png')
 
-    display, start_display, add_menu, add_function_to_menu = init_display()
-    
-    display.DisplayShape(aCompound, update=True)
-    display.View.Dump("./bolt.png")
-
-    # start_display()
 
 
 
