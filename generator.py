@@ -50,37 +50,7 @@ def addText(d, textLine1, textLine2 = ""):
     d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1))
 
 
-def addNut(d):
-    # Add drawing of a mechanical nut to the label
-    nutRadius = 5
-
-    # https://dev.opencascade.org/content/cad-file-2d-projection-how-get-just-outlining-edges
-    # https://stackoverflow.com/questions/66929762/extract-volume-from-a-step-file
-    # https://forum.freecad.org/viewtopic.php?t=79648&start=10
-
-    # Using anaconda: http://analysissitus.org/forum/index.php?threads/pythonocc-getting-started-guide.19/
-
-    # Handle(HLRBRep_Algo) myAlgo = new HLRBRep_Algo();
-    # HLRAlgo_Projector aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., y1, shapeCenterHeight), gp_Dir(0., 1., 0)));
-    # myAlgo->Add(shape);
-    # myAlgo->Projector(aProjector);
-    # myAlgo->Update();
-    # myAlgo->Hide();
-
-    # HLRBRep_HLRToShape aHLRToShape(myAlgo);
-
-    # TopoDS_Compound aCompound;
-    # BRep_Builder aBuilder;
-    # aBuilder.MakeCompound(aCompound);
-    # aBuilder.Add(aCompound, aHLRToShape.VCompound());
-    # aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound();
-
-    # Handle(AIS_Shape) HNDL_spheres = new AIS_Shape(compoundShape);
-    # myContext->Display(HNDL_spheres,1,-1,false,false);
-
-
-    # TODO: This looks usefull: get_sorted_hlr_edges
-
+def render3D(d):
     stepReader = STEPControl_Reader()
     stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
     # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
@@ -88,9 +58,8 @@ def addNut(d):
     myshape = stepReader.Shape()
 
     myAlgo = HLRBRep_Algo()
-    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
-    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., .6, 0.7)))
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
+    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
     myAlgo.Update()
@@ -109,21 +78,6 @@ def addNut(d):
 
 
 
-
-
-
-
-
-    
-
-
-
-
-
-
-
-    
-
 def generateLabel():
 
     # Create a new SVG drawing
@@ -134,7 +88,7 @@ def generateLabel():
 
     addText(d, "M3-8 Screws", "Hex Button")
 
-    addNut(d)
+    render3D(d)
 
     # Add text to the label
     d.append(draw.Text("Hello World", 0, 0, 10, center=1))
