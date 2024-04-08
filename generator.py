@@ -59,11 +59,10 @@ def render3D(d):
 
     myAlgo = HLRBRep_Algo()
     aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
-    # aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
+    #aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
     myAlgo.Update()
-    myAlgo.Hide()
 
     aHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -75,6 +74,22 @@ def render3D(d):
 
     renderer = UpdatedOffscreenRenderer()
     renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt.png')
+
+    # Render along other axis
+    bProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
+    myAlgo.Projector(bProjector)
+    myAlgo.Update()
+
+    bHLRToShape = HLRBRep_HLRToShape(myAlgo)
+
+    bCompound = TopoDS_Compound()
+    bBuilder = BRep_Builder()
+    bBuilder.MakeCompound(bCompound)
+    bBuilder.Add(bCompound, bHLRToShape.VCompound())
+    bBuilder.Add(bCompound, bHLRToShape.OutLineVCompound())
+
+    renderer = UpdatedOffscreenRenderer()
+    renderer.DisplayShape(bCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt2.png')
 
 
 
