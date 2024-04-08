@@ -52,7 +52,6 @@ class UpdatedOffscreenRenderer(Viewer3d):
         cam.SetEye(eye)
 
         self.View.FitAll()
-        # self.View.UpdateCurrentViewer()
 
         if dump_image or (
             os.getenv("PYTHONOCC_OFFSCREEN_RENDERER_DUMP_IMAGE") == "1"

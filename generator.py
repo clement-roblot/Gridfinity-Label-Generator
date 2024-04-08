@@ -7,8 +7,8 @@ from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.STEPControl import STEPControl_Reader
 from OCC.Display.SimpleGui import init_display
-
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
+import time
 
 labelWidth = 370
 labelHeight = 120
@@ -51,6 +51,9 @@ def addText(d, textLine1, textLine2 = ""):
 
 
 def render3D(d):
+
+    start = time.process_time()
+
     stepReader = STEPControl_Reader()
     stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
     # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
@@ -58,11 +61,11 @@ def render3D(d):
     myshape = stepReader.Shape()
 
     myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
-    #aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
     myAlgo.Update()
+    myAlgo.Hide()       # Hide the obsructed lines
 
     aHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -79,6 +82,7 @@ def render3D(d):
     bProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
     myAlgo.Projector(bProjector)
     myAlgo.Update()
+    myAlgo.Hide()       # Hide the obsructed lines
 
     bHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -91,6 +95,7 @@ def render3D(d):
     renderer = UpdatedOffscreenRenderer()
     renderer.DisplayShape(bCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt2.png')
 
+    print(time.process_time() - start)
 
 
 def generateLabel():
