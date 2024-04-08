@@ -86,7 +86,7 @@ def addNut(d):
     myshape = stepReader.Shape()
 
     myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0)))
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
     myAlgo.Update()
@@ -104,8 +104,9 @@ def addNut(d):
     display, start_display, add_menu, add_function_to_menu = init_display()
     
     display.DisplayShape(aCompound, update=True)
+    display.View.Dump("./bolt.png")
 
-    start_display()
+    # start_display()
 
 
 
