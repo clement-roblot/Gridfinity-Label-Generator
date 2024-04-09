@@ -7,8 +7,15 @@ from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.STEPControl import STEPControl_Reader
 from OCC.Display.SimpleGui import init_display
+from OCC.Core.TopAbs import TopAbs_FORWARD
+from OCC.Core.TopoDS import TopoDS_Compound
+from OCC.Core.BRep import BRep_Builder
+from OCC.Core.gp import gp_Trsf, gp_Ax1
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
+
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 import time
+import math
 
 labelWidth = 370
 labelHeight = 120
@@ -60,12 +67,18 @@ def render3D(d):
     stepReader.TransferRoot()
     myshape = stepReader.Shape()
 
+    rotation = gp_Trsf()
+    rotation.SetRotation(gp_Ax1(gp_Pnt(0., 0., 0.), gp_Dir(1., 0., 0.)), math.pi/4)
+    myshapeRotated = BRepBuilderAPI_Transform(myshape, rotation, True).Shape()
+
+
     myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
     myAlgo.Add(myshape)
     myAlgo.Projector(aProjector)
+
     myAlgo.Update()
-    myAlgo.Hide()       # Hide the obsructed lines
+    myAlgo.Hide()       # Hide the obsructed lines (very slow!)
 
     aHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -78,11 +91,14 @@ def render3D(d):
     renderer = UpdatedOffscreenRenderer()
     renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt.png')
 
+    middle = time.process_time()
+
     # Render along other axis
-    bProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 0., 1.)))
-    myAlgo.Projector(bProjector)
+
+    myAlgo.Remove(myAlgo.Index(myshape))
+    myAlgo.Add(myshapeRotated)
     myAlgo.Update()
-    myAlgo.Hide()       # Hide the obsructed lines
+    # myAlgo.Hide()
 
     bHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -95,7 +111,8 @@ def render3D(d):
     renderer = UpdatedOffscreenRenderer()
     renderer.DisplayShape(bCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt2.png')
 
-    print(time.process_time() - start)
+    print(f"Part1: {middle - start}")
+    print(f"Part2: {time.process_time() - middle}")
 
 
 def generateLabel():

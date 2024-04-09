@@ -1,6 +1,12 @@
 
 # TODO
 - Export as a raised STL so that the label can be 3d printed?
+- Automaticaly find the main axis of a part (seearch the local axis)
+    - https://dev.opencascade.org/content/how-do-i-find-local-axis-shape
+    - We want to find the [eigen vectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors), or at least the vector that are the least impacted by a given rotation
+- Rotate the part around its center of gravity?
+    - https://dev.opencascade.org/content/center-gravity
+    - https://dev.opencascade.org/content/center-gravity-api
 
 
 
