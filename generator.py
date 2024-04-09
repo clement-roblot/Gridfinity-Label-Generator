@@ -57,28 +57,16 @@ def addText(d, textLine1, textLine2 = ""):
     d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1))
 
 
-def render3D(d):
-
-    start = time.process_time()
-
-    stepReader = STEPControl_Reader()
-    stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
-    # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
-    stepReader.TransferRoot()
-    myshape = stepReader.Shape()
-
-    rotation = gp_Trsf()
-    rotation.SetRotation(gp_Ax1(gp_Pnt(0., 0., 0.), gp_Dir(1., 0., 0.)), math.pi/4)
-    myshapeRotated = BRepBuilderAPI_Transform(myshape, rotation, True).Shape()
-
-
+def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
     myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), gp_Dir(0., 1., 0.)))
-    myAlgo.Add(myshape)
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), orientation))
+    myAlgo.Add(shape)
     myAlgo.Projector(aProjector)
 
     myAlgo.Update()
-    myAlgo.Hide()       # Hide the obsructed lines (very slow!)
+
+    if hideObstructed:
+        myAlgo.Hide()       # Hide the obsructed lines (very slow!)
 
     aHLRToShape = HLRBRep_HLRToShape(myAlgo)
 
@@ -88,31 +76,21 @@ def render3D(d):
     aBuilder.Add(aCompound, aHLRToShape.VCompound())
     aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())
 
-    renderer = UpdatedOffscreenRenderer()
-    renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt.png')
+    return aCompound
 
-    middle = time.process_time()
 
-    # Render along other axis
+def render3D(d):
 
-    myAlgo.Remove(myAlgo.Index(myshape))
-    myAlgo.Add(myshapeRotated)
-    myAlgo.Update()
-    # myAlgo.Hide()
+    stepReader = STEPControl_Reader()
+    stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
+    # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
+    stepReader.TransferRoot()
+    myshape = stepReader.Shape()
 
-    bHLRToShape = HLRBRep_HLRToShape(myAlgo)
-
-    bCompound = TopoDS_Compound()
-    bBuilder = BRep_Builder()
-    bBuilder.MakeCompound(bCompound)
-    bBuilder.Add(bCompound, bHLRToShape.VCompound())
-    bBuilder.Add(bCompound, bHLRToShape.OutLineVCompound())
-
-    renderer = UpdatedOffscreenRenderer()
-    renderer.DisplayShape(bCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename='bolt2.png')
-
-    print(f"Part1: {middle - start}")
-    print(f"Part2: {time.process_time() - middle}")
+    for i in range(0, 360, 15):
+        aCompound = renderAngle(myshape, gp_Dir(0., math.cos(math.radians(i)), math.sin(math.radians(i))), False)
+        renderer = UpdatedOffscreenRenderer()
+        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename=f'bolt.png')
 
 
 def generateLabel():
