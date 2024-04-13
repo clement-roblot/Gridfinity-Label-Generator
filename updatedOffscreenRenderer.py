@@ -20,6 +20,7 @@ class UpdatedOffscreenRenderer(Viewer3d):
         self.SetSize(screen_size[0], screen_size[1])
         self.SetModeShaded()
         self.set_bg_gradient_color([255, 255, 255], [255, 255, 255])
+        
         # self.display_triedron()
         self.capture_number = 0
 

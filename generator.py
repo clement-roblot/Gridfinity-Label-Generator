@@ -12,6 +12,7 @@ from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Trsf, gp_Ax1
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
+from PIL import Image, ImageMorph, ImageFilter
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 import time
@@ -79,18 +80,64 @@ def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
     return aCompound
 
 
-def render3D(d):
+def keying(imagePath, keyColor = (255, 255, 255)):
+    img = Image.open(imagePath)
+    img = img.convert("RGBA")
+    datas = img.getdata()
+
+    tolerance = 10
+    newData = []
+    for item in datas:
+        if item[0] in range(keyColor[0]-tolerance, keyColor[0]+tolerance) and item[1] in range(keyColor[1]-tolerance, keyColor[1]+tolerance) and item[2] in range(keyColor[2]-tolerance, keyColor[2]+tolerance):
+            newData.append((255, 255, 255, 0))
+        else:
+            newData.append(item)
+
+    img.putdata(newData)
+    img.save(imagePath, "PNG")
+
+def makeLinesThicker(imagePath, thickness = 9):
+    img = Image.open(imagePath)
+    edges = img.filter(ImageFilter.FIND_EDGES)
+
+    if thickness % 2 == 0:
+        thickness += 1
+
+    fatEdges = edges.filter(ImageFilter.MaxFilter(thickness))
+    datas = fatEdges.getdata()
+
+    newData = []
+    for item in datas:
+        if item[3] > 128:
+            newData.append((0, 0, 0, 255))
+        else:
+            newData.append(item)
+
+    fatEdges.putdata(newData)
+    fatEdges.save(imagePath, "PNG")
+
+def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, margin = 10):
 
     stepReader = STEPControl_Reader()
-    stepReader.ReadFile('./meca/91255A008_Button Head Hex Drive Screw.STEP')
-    # stepReader.ReadFile('./meca/93075A148_Low-Strength Zinc-Plated Steel Hex Head Screws.STEP')
+    stepReader.ReadFile(stepFile)
     stepReader.TransferRoot()
     myshape = stepReader.Shape()
 
-    for i in range(0, 360, 15):
-        aCompound = renderAngle(myshape, gp_Dir(0., math.cos(math.radians(i)), math.sin(math.radians(i))), False)
+    try:
+        aCompound = renderAngle(myshape, orientation, hideObstructed)
         renderer = UpdatedOffscreenRenderer()
-        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename=f'bolt.png')
+        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp.png")
+
+        keying("tmp.png")
+
+        makeLinesThicker("tmp.png")
+
+        # Add the rendered image to the label
+        imageHeight = (labelHeight-2*margin)
+        d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp.png"))
+
+    except ValueError:
+        pass
 
 
 def generateLabel():
@@ -103,7 +150,7 @@ def generateLabel():
 
     addText(d, "M3-8 Screws", "Hex Button")
 
-    render3D(d)
+    add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(1., 0., 0.), True)
 
     # Add text to the label
     d.append(draw.Text("Hello World", 0, 0, 10, center=1))

@@ -7,6 +7,7 @@
 - Rotate the part around its center of gravity?
     - https://dev.opencascade.org/content/center-gravity
     - https://dev.opencascade.org/content/center-gravity-api
+- Use foocus to stylize the drawings for my labels
 
 
 
