@@ -150,7 +150,7 @@ def generateLabel():
 
     addText(d, "M3-8 Screws", "Hex Button")
 
-    add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(1., 0., 0.), True)
+    add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(0., -1., -1.), True)
 
     # Add text to the label
     d.append(draw.Text("Hello World", 0, 0, 10, center=1))
