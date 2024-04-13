@@ -13,6 +13,7 @@ from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Trsf, gp_Ax1
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from PIL import Image, ImageMorph, ImageFilter
+import qrcode
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 import time
@@ -52,7 +53,7 @@ def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 4):
 
 def addText(d, textLine1, textLine2 = ""):
     # Add text to the label
-    fontSize = 30
+    fontSize = 25
     marginFromCenter = 5
     d.append(draw.Text(textLine1, fontSize, 0, -marginFromCenter, center=1))
     d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1))
@@ -126,19 +127,37 @@ def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, 
     try:
         aCompound = renderAngle(myshape, orientation, hideObstructed)
         renderer = UpdatedOffscreenRenderer()
-        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp.png")
+        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp3D.png")
 
-        keying("tmp.png")
+        keying("tmp3D.png")
 
-        makeLinesThicker("tmp.png")
+        makeLinesThicker("tmp3D.png")
 
         # Add the rendered image to the label
         imageHeight = (labelHeight-2*margin)
-        d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp.png"))
+        d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp3D.png"))
 
     except ValueError:
         pass
 
+def addQRCode(d, url, margin = 20):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=0,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save("tmpQrCode.png")
+
+    keying("tmpQrCode.png")
+
+    # Add the rendered image to the label
+    imageHeight = (labelHeight-2*margin)
+    d.append(draw.Image((labelWidth/2) - margin - imageHeight, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmpQrCode.png"))
 
 def generateLabel():
 
@@ -151,6 +170,8 @@ def generateLabel():
     addText(d, "M3-8 Screws", "Hex Button")
 
     add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(0., -1., -1.), True)
+
+    addQRCode(d, "https://www.lazada.co.th/catalog/?spm=a2o4m.home-th.search.d_go&q=M3%20nuts")
 
     # Add text to the label
     d.append(draw.Text("Hello World", 0, 0, 10, center=1))
