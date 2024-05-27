@@ -15,7 +15,13 @@ class Sticker(QtWidgets.QListWidgetItem):
     textLine2 = ""
     qrCodeUrl = ""
     modelPath = ""
+
+    pitch = 0
+    roll = 0
+    yaw = 0
     
+    hideObstructed = True
+
     def __init__(self, parent=None):
         super().__init__(parent)
 

@@ -125,6 +125,11 @@ class StickerForm(QtWidgets.QWidget):
         self.qrCodeUrl.setText(self.sticker.qrCodeUrl)
         self.modelPath.setText(self.sticker.modelPath)
 
+        self.pitchSlider.setValue(self.sticker.pitch)
+        self.rollSlider.setValue(self.sticker.roll)
+        self.yawSlider.setValue(self.sticker.yaw)
+
+        self.hideObstructedCheckbox.setChecked(self.sticker.hideObstructed)
 
     def saveData(self):
 
@@ -144,7 +149,10 @@ class StickerForm(QtWidgets.QWidget):
         self.sticker.qrCodeUrl = self.qrCodeUrl.text()
         self.sticker.modelPath = self.modelPath.text()
 
+        self.sticker.pitch = self.pitchSlider.value()
+        self.sticker.roll = self.rollSlider.value()
+        self.sticker.yaw = self.yawSlider.value()
+
+        self.sticker.hideObstructed = self.hideObstructedCheckbox.isChecked()
 
         self.sticker.valueChanged()
-
-
