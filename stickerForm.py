@@ -1,6 +1,8 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 
+from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 from sticker import Sticker
+from generator import render3D, convert_angles_to_direction, keying, makeLinesThicker
 
 
 class StickerForm(QtWidgets.QWidget):
@@ -77,6 +79,7 @@ class StickerForm(QtWidgets.QWidget):
         self.modelPath = QtWidgets.QLineEdit(self)
         self.layout.addWidget(self.modelPath, currentLayoutLine, 1, 1, 5)
         self.modelBrowsButton = QtWidgets.QPushButton(self, text="Browse")
+        self.modelBrowsButton.clicked.connect(self.selectModel)
         self.layout.addWidget(self.modelBrowsButton, currentLayoutLine, 6)
 
         currentLayoutLine += 1
@@ -95,18 +98,73 @@ class StickerForm(QtWidgets.QWidget):
         # 3d view controls
         self.layout.addWidget(QtWidgets.QLabel("Pitch:"), currentLayoutLine, 4)
         self.pitchSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
+        self.pitchSlider.valueChanged.connect(self.refresh3DViewQuick)
+        self.pitchSlider.sliderReleased.connect(self.refresh3DViewFull)
         self.layout.addWidget(self.pitchSlider, currentLayoutLine, 5, 1, 2)
         
         self.layout.addWidget(QtWidgets.QLabel("Roll:"), currentLayoutLine+1, 4)
         self.rollSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
+        self.rollSlider.valueChanged.connect(self.refresh3DViewQuick)
+        self.rollSlider.sliderReleased.connect(self.refresh3DViewFull)
         self.layout.addWidget(self.rollSlider, currentLayoutLine+1, 5, 1, 2)
 
         self.layout.addWidget(QtWidgets.QLabel("Yaw:"), currentLayoutLine+2, 4)
         self.yawSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
+        self.yawSlider.valueChanged.connect(self.refresh3DViewQuick)
+        self.yawSlider.sliderReleased.connect(self.refresh3DViewFull)
         self.layout.addWidget(self.yawSlider, currentLayoutLine+2, 5, 1, 2)
 
         self.hideObstructedCheckbox = QtWidgets.QCheckBox(self, text="Hide obstructed lines", checked=True)
         self.layout.addWidget(self.hideObstructedCheckbox, currentLayoutLine+3, 4, 1, 3)
+
+
+    @QtCore.Slot()
+    def selectModel(self):
+        modelFilePaths = QtWidgets.QFileDialog.getOpenFileName(self, "Select 3D model", "", "3D model (*)")
+
+        if len(modelFilePaths) == 0:
+            return
+        
+        self.modelPath.setText(modelFilePaths[0])
+
+        self.refresh3DViewFull()
+
+    @QtCore.Slot()
+    def refresh3DViewQuick(self):
+
+        if self.modelPath.text() == "":
+            return
+        
+        imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
+        
+        orientation = convert_angles_to_direction(self.pitchSlider.value(), self.rollSlider.value())
+        hideObstructed = False
+
+        render3D(self.modelPath.text(), orientation, hideObstructed)
+
+        self.scene.clear()
+        self.scene.addPixmap(QtGui.QPixmap(imagePath))
+        self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
+
+    @QtCore.Slot()
+    def refresh3DViewFull(self):
+
+        if self.modelPath.text() == "":
+            return
+        
+        imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
+        
+        orientation = convert_angles_to_direction(self.pitchSlider.value(), self.rollSlider.value())
+        hideObstructed = False
+
+        render3D(self.modelPath.text(), orientation, hideObstructed)
+
+        keying("tmp3D.png")
+        makeLinesThicker("tmp3D.png")
+
+        self.scene.clear()
+        self.scene.addPixmap(QtGui.QPixmap(imagePath))
+        self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
     def loadData(self, sticker):
         self.sticker = sticker
@@ -130,6 +188,9 @@ class StickerForm(QtWidgets.QWidget):
         self.yawSlider.setValue(self.sticker.yaw)
 
         self.hideObstructedCheckbox.setChecked(self.sticker.hideObstructed)
+
+        self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
+
 
     def saveData(self):
 

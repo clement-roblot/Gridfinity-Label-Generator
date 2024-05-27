@@ -14,7 +14,7 @@ class Sticker(QtWidgets.QListWidgetItem):
     textLine1 = ""
     textLine2 = ""
     qrCodeUrl = ""
-    modelPath = ""
+    modelPath = "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP"
 
     pitch = 0
     roll = 0

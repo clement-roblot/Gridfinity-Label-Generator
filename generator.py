@@ -117,7 +117,22 @@ def makeLinesThicker(imagePath, thickness = 9):
     fatEdges.putdata(newData)
     fatEdges.save(imagePath, "PNG")
 
-def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, margin = 10):
+def convert_angles_to_direction(alpha_deg, beta_deg):
+    # Convert degrees to radians
+    alpha_rad = math.radians(alpha_deg)
+    beta_rad = math.radians(beta_deg)
+
+    # Convert spherical coordinates to Cartesian coordinates
+    x = math.sin(beta_rad) * math.cos(alpha_rad)
+    y = math.sin(beta_rad) * math.sin(alpha_rad)
+    z = math.cos(beta_rad)
+
+    # Create the direction
+    direction = gp_Dir(x, y, z)
+
+    return direction
+
+def render3D(stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
     stepReader = STEPControl_Reader()
     stepReader.ReadFile(stepFile)
@@ -128,17 +143,21 @@ def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, 
         aCompound = renderAngle(myshape, orientation, hideObstructed)
         renderer = UpdatedOffscreenRenderer()
         renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp3D.png")
-
-        keying("tmp3D.png")
-
-        makeLinesThicker("tmp3D.png")
-
-        # Add the rendered image to the label
-        imageHeight = (labelHeight-2*margin)
-        d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp3D.png"))
-
     except ValueError:
         pass
+
+def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, margin = 10):
+
+    render3D(stepFile, orientation, hideObstructed)
+
+    keying("tmp3D.png")
+
+    makeLinesThicker("tmp3D.png")
+
+    # Add the rendered image to the label
+    imageHeight = (labelHeight-2*margin)
+    d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp3D.png"))
+
 
 def addQRCode(d, url, margin = 20):
     qr = qrcode.QRCode(

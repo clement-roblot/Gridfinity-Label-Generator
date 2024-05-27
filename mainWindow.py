@@ -28,16 +28,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bottomButtons.layout.setContentsMargins(0, 0, 0, 0)
 
         self.addStickerButton = QtWidgets.QPushButton("+", self)
-        # self.addStickerButton.setFixedSize(40, 40)
+        self.addStickerButton.setFixedSize(40, 40)
         self.addStickerButton.clicked.connect(self.newSticker)
         self.bottomButtons.layout.addWidget(self.addStickerButton)
 
         self.deleteStickerButton = QtWidgets.QPushButton("-", self)
-        # self.deleteStickerButton.setFixedSize(40, 40)
+        self.deleteStickerButton.setFixedSize(40, 40)
         self.bottomButtons.layout.addWidget(self.deleteStickerButton)
 
-        self.printButton = QtWidgets.QPushButton("P", self)
-        # self.printButton.setFixedSize(40, 40)
+        self.printButton = QtWidgets.QPushButton("🖨️", self)
+        self.printButton.setFixedSize(40, 40)
         self.bottomButtons.layout.addWidget(self.printButton)
 
         self.leftWidget.layout.addWidget(self.bottomButtons)
