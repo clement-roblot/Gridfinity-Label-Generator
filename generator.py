@@ -20,11 +20,11 @@ import time
 import math
 
 labelWidth = 370
-labelHeight = 120
+labelHeight = 130
 
 
 
-def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 4):
+def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 30):
     # Add border to the label with rounded corners on top
     d.append(draw.Lines(-labelWidth/2 + margin + topCornerRadius, -labelHeight/2 + margin,
                         labelWidth/2 - margin - topCornerRadius, -labelHeight/2 + margin,
@@ -76,7 +76,7 @@ def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
     aBuilder = BRep_Builder()
     aBuilder.MakeCompound(aCompound)
     aBuilder.Add(aCompound, aHLRToShape.VCompound())
-    aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())
+    aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())     # Is that useful?
 
     return aCompound
 
@@ -156,8 +156,9 @@ def addQRCode(d, url, margin = 20):
     keying("tmpQrCode.png")
 
     # Add the rendered image to the label
-    imageHeight = (labelHeight-2*margin)
-    d.append(draw.Image((labelWidth/2) - margin - imageHeight, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmpQrCode.png"))
+    imageHeight = (labelHeight-1.5*margin)
+    marginFromEdge = ((labelHeight-imageHeight)/2)
+    d.append(draw.Image((labelWidth/2) - marginFromEdge - imageHeight, -imageHeight/2, imageHeight, imageHeight, "tmpQrCode.png"))
 
 def generateLabel():
 
@@ -167,11 +168,11 @@ def generateLabel():
     # Add border to the label
     addBorder(d)
 
-    addText(d, "M3-8 Screws", "Hex Button")
+    addText(d, "M3", "Nuts")
 
     add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(0., -1., -1.), True)
 
-    addQRCode(d, "https://www.lazada.co.th/catalog/?spm=a2o4m.home-th.search.d_go&q=M3%20nuts")
+    addQRCode(d, "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6")
 
     # Add text to the label
     d.append(draw.Text("Hello World", 0, 0, 10, center=1))
