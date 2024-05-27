@@ -37,11 +37,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.leftWidget.layout.addWidget(self.bottomButtons)
 
-
         # Right part of the layout
         self.stickerForm = StickerForm(self)
         self.mainWidget.addWidget(self.stickerForm)
-
 
         self.mainWidget.setSizes([20, 80])
         self.resize(1200, 700)
