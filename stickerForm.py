@@ -155,7 +155,7 @@ class StickerForm(QtWidgets.QWidget):
         imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
         
         orientation = convert_angles_to_direction(self.pitchSlider.value(), self.rollSlider.value())
-        hideObstructed = False
+        hideObstructed = self.hideObstructedCheckbox.isChecked()
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
 
