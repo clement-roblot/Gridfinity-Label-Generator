@@ -1,7 +1,11 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 
+from sticker import Sticker
+
 
 class StickerForm(QtWidgets.QWidget):
+
+    sticker = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -90,18 +94,57 @@ class StickerForm(QtWidgets.QWidget):
 
         # 3d view controls
         self.layout.addWidget(QtWidgets.QLabel("Pitch:"), currentLayoutLine, 4)
-        self.pitchSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal)
+        self.pitchSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
         self.layout.addWidget(self.pitchSlider, currentLayoutLine, 5, 1, 2)
         
         self.layout.addWidget(QtWidgets.QLabel("Roll:"), currentLayoutLine+1, 4)
-        self.rollSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal)
+        self.rollSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
         self.layout.addWidget(self.rollSlider, currentLayoutLine+1, 5, 1, 2)
 
         self.layout.addWidget(QtWidgets.QLabel("Yaw:"), currentLayoutLine+2, 4)
-        self.yawSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal)
+        self.yawSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
         self.layout.addWidget(self.yawSlider, currentLayoutLine+2, 5, 1, 2)
 
         self.hideObstructedCheckbox = QtWidgets.QCheckBox(self, text="Hide obstructed lines", checked=True)
         self.layout.addWidget(self.hideObstructedCheckbox, currentLayoutLine+3, 4, 1, 3)
+
+    def loadData(self, sticker):
+        self.sticker = sticker
+
+        self.widthField.setValue(self.sticker.width)
+        self.heightField.setValue(self.sticker.height)
+
+        self.topLeftRoundedCorner.setValue(self.sticker.topLeftRoundedCorner)
+        self.topRightRoundedCorner.setValue(self.sticker.topRightRoundedCorner)
+        self.bottomLeftRoundedCorner.setValue(self.sticker.bottomLeftRoundedCorner)
+        self.bottomRightRoundedCorner.setValue(self.sticker.bottomRightRoundedCorner)
+
+        self.textLine1.setText(self.sticker.textLine1)
+        self.textLine2.setText(self.sticker.textLine2)
+
+        self.qrCodeUrl.setText(self.sticker.qrCodeUrl)
+        self.modelPath.setText(self.sticker.modelPath)
+
+
+    def saveData(self):
+
+        if self.sticker is None:
+            return
+
+        self.sticker.width = self.widthField.value()
+        self.sticker.height = self.heightField.value()
+
+        self.sticker.topLeftRoundedCorner = self.topLeftRoundedCorner.value()
+        self.sticker.topRightRoundedCorner = self.topRightRoundedCorner.value()
+        self.sticker.bottomLeftRoundedCorner = self.bottomLeftRoundedCorner.value()
+        self.sticker.bottomRightRoundedCorner = self.bottomRightRoundedCorner.value()
+
+        self.sticker.textLine1 = self.textLine1.text()
+        self.sticker.textLine2 = self.textLine2.text()
+        self.sticker.qrCodeUrl = self.qrCodeUrl.text()
+        self.sticker.modelPath = self.modelPath.text()
+
+
+        self.sticker.valueChanged()
 
 
