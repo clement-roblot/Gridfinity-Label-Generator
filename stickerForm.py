@@ -169,6 +169,9 @@ class StickerForm(QtWidgets.QWidget):
     def loadData(self, sticker):
         self.sticker = sticker
 
+        if self.sticker is None:
+            return
+
         self.widthField.setValue(self.sticker.width)
         self.heightField.setValue(self.sticker.height)
 

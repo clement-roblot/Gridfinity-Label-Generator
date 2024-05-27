@@ -22,10 +22,26 @@ class Sticker(QtWidgets.QListWidgetItem):
     
     hideObstructed = True
 
-    def __init__(self, parent=None):
+    def __init__(self, jsonData={}, parent=None):
         super().__init__(parent)
 
-        self.setText("Sticker")
+        if jsonData:
+            self.width = jsonData["width"]
+            self.height = jsonData["height"]
+            self.topLeftRoundedCorner = jsonData["topLeftRoundedCorner"]
+            self.topRightRoundedCorner = jsonData["topRightRoundedCorner"]
+            self.bottomLeftRoundedCorner = jsonData["bottomLeftRoundedCorner"]
+            self.bottomRightRoundedCorner = jsonData["bottomRightRoundedCorner"]
+            self.textLine1 = jsonData["textLine1"]
+            self.textLine2 = jsonData["textLine2"]
+            self.qrCodeUrl = jsonData["qrCodeUrl"]
+            self.modelPath = jsonData["modelPath"]
+            self.pitch = jsonData["pitch"]
+            self.roll = jsonData["roll"]
+            self.yaw = jsonData["yaw"]
+            self.hideObstructed = jsonData["hideObstructed"]
+
+        self.valueChanged()
 
     @QtCore.Slot()
     def valueChanged(self):
@@ -36,3 +52,20 @@ class Sticker(QtWidgets.QListWidgetItem):
         
         self.setText(self.textLine1 + " " + self.textLine2)
 
+    def getJson(self):
+        return {
+            "width": self.width,
+            "height": self.height,
+            "topLeftRoundedCorner": self.topLeftRoundedCorner,
+            "topRightRoundedCorner": self.topRightRoundedCorner,
+            "bottomLeftRoundedCorner": self.bottomLeftRoundedCorner,
+            "bottomRightRoundedCorner": self.bottomRightRoundedCorner,
+            "textLine1": self.textLine1,
+            "textLine2": self.textLine2,
+            "qrCodeUrl": self.qrCodeUrl,
+            "modelPath": self.modelPath,
+            "pitch": self.pitch,
+            "roll": self.roll,
+            "yaw": self.yaw,
+            "hideObstructed": self.hideObstructed
+        }
