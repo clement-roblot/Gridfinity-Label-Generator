@@ -8,6 +8,8 @@ cairosvg = "*"
 pycairo = "*"
 drawsvg = "*"
 pillow = "*"
+pyside6 = "*"
+pyqtdarktheme = "*"
 
 [dev-packages]
 
