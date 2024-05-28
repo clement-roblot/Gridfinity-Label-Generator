@@ -31,7 +31,7 @@ import time
 import math
 
 dpi = 300
-
+defaultFont = None
 
 labelWidth = 370
 labelHeight = 130
@@ -210,27 +210,89 @@ def generateTestLabel():
     d.save_svg('label.svg')
     # d.save_png('label.png')
 
+def getTextSize(text):
+    ascent, descent = defaultFont.getmetrics()
+
+    text_width = defaultFont.getmask(text).getbbox()[2]
+    text_height = defaultFont.getmask(text).getbbox()[3] + descent
+
+    return (text_width, text_height)
+
 def generateLabel(label):
 
     widthPoints = int(label["width"] * dpi / 25.4)
     heightPoints = int(label["height"] * dpi / 25.4)
-    txt = Image.new("RGB", size=(widthPoints, heightPoints), color=(255, 255, 255, 0))
+    topLeftRoundedCorner = int(label["topLeftRoundedCorner"] * dpi / 25.4)
+    topRightRoundedCorner = int(label["topRightRoundedCorner"] * dpi / 25.4)
+    bottomLeftRoundedCorner = int(label["bottomLeftRoundedCorner"] * dpi / 25.4)
+    bottomRightRoundedCorner = int(label["bottomRightRoundedCorner"] * dpi / 25.4)
+
+    img = Image.new("RGB", size=(widthPoints, heightPoints), color=(255, 255, 255, 0))
 
     # Draw the border
-    # img1 = ImageDraw.Draw(img)   
-    # img1.line(shape, fill ="none", width = 0) 
+    d = ImageDraw.Draw(img)
+
+    lineWidth = 10
+    hl = lineWidth/2
+    d.line([(topLeftRoundedCorner, hl), (widthPoints-topRightRoundedCorner, hl)] , fill="black", width=lineWidth) 
+    d.line([(widthPoints-hl, topRightRoundedCorner), (widthPoints-hl, heightPoints - bottomRightRoundedCorner)] , fill="black", width=lineWidth) 
+    d.line([(widthPoints - bottomRightRoundedCorner, heightPoints-hl), (bottomLeftRoundedCorner, heightPoints-hl)] , fill="black", width=lineWidth) 
+    d.line([(hl, heightPoints - bottomLeftRoundedCorner), (hl, topLeftRoundedCorner)] , fill="black", width=lineWidth) 
+
+    d.arc([(0, 0), (topLeftRoundedCorner*2, topLeftRoundedCorner*2)], 180, 270, fill="black", width=lineWidth)
+    d.arc([(widthPoints-(2*topRightRoundedCorner), 0), (widthPoints, (2*topRightRoundedCorner))], 270, 360, fill="black", width=lineWidth)
+    d.arc([(0, heightPoints-(2*bottomLeftRoundedCorner)), (2*bottomLeftRoundedCorner, heightPoints)], 90, 180, fill="black", width=lineWidth)
+    d.arc([(widthPoints-(2*bottomRightRoundedCorner), heightPoints-(2*bottomRightRoundedCorner)), (widthPoints, heightPoints)], 0, 90, fill="black", width=lineWidth)
 
     # Write the text
-    font = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
-    d = ImageDraw.Draw(txt)
+    l1Width, l1Height = getTextSize(label["textLine1"])
+    l2Width, l2Height = getTextSize(label["textLine2"])
 
-    d.text((10, 10), label["textLine1"], font=font, fill=(0, 0, 0, 255))
+    l1PosX = ((widthPoints-l1Width)/2)
+    l2PosX = ((widthPoints-l2Width)/2)
+    verticalSpacing = ((heightPoints-l1Height-l2Height-lineWidth-lineWidth)/3)
 
-    # txt.show()
-    return txt
+    d.text((l1PosX, verticalSpacing+lineWidth), label["textLine1"], font=defaultFont, fill=(0, 0, 0, 255))
+    d.text((l2PosX, l1Height+(2*verticalSpacing)), label["textLine2"], font=defaultFont, fill=(0, 0, 0, 255))
+
+    imagesMargin = (lineWidth+10)
+    imagesHeight = (heightPoints - (2*imagesMargin))
+
+    # Render the 3D model
+    render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])
+    keying("tmp3D.png")
+    makeLinesThicker("tmp3D.png")
+
+    modelImage = Image.open("tmp3D.png")
+    modelImage.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
+    img.paste(modelImage, (imagesMargin, imagesMargin), mask=modelImage)
+
+    # Draw the QR code
+    # box_size is the pixel size of each square of the QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=0,
+    )
+    qr.add_data(label["qrCodeUrl"])
+    qr.make(fit=True)
+
+    qrCode = qr.make_image(fill_color="black", back_color="white")
+
+    qrCode.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
+    img.paste(qrCode, (widthPoints-imagesHeight-imagesMargin, imagesMargin))
+
+    return img
 
 
 def generateLabelSheets(labelDataList):
+
+    global defaultFont
+    if "font" in labelDataList:
+        defaultFont = ImageFont.truetype(labelDataList["font"], 40)
+    else:
+        defaultFont = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
 
     labels = []
     for label in labelDataList["stickerList"]:
@@ -246,10 +308,10 @@ def generateLabelSheets(labelDataList):
     yOffset = margin
     for i, label in enumerate(labels):
         outSheet.paste(label, (xOffset, yOffset))
-        xOffset += 200
+        xOffset += 500
         if xOffset >= sheetWidthPoints:
             xOffset = margin
-            yOffset += 200
+            yOffset += 500
 
     outSheet.save("out.pdf", save_all=True)
 
@@ -259,6 +321,7 @@ if __name__ == '__main__':
     generateLabelSheets({
         "pageWidth": 210,
         "pageHeight": 297,
+        "font": "/usr/share/fonts/truetype/msttcorefonts/times.ttf",
         "stickerList": [
             {
                 "width": 37,
