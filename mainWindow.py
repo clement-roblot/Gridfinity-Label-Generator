@@ -3,6 +3,8 @@ import json
 
 from stickerForm import StickerForm
 from sticker import Sticker
+from generator import generateLabelSheets
+
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -115,6 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def saveFile(self):
 
+        self.refresh()
         if self.currentFileName == "":
             self.saveAsFile()
         else:
@@ -123,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def saveAsFile(self):
 
+        self.refresh()
         options = QtWidgets.QFileDialog.Options()
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "",
                                                   "JSON Files (*.json)", options=options)
@@ -143,8 +147,9 @@ class MainWindow(QtWidgets.QMainWindow):
             for stickerData in data["stickerList"]:
                 self.stickerList.addItem(Sticker(stickerData))
 
+    def getData(self):
+        self.refresh()
 
-    def saveToFile(self, fileName):
         dataDict = {
             "pageWidth": self.pageWidth,
             "pageHeight": self.pageHeight,
@@ -154,14 +159,21 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(self.stickerList.count()):
             dataDict["stickerList"].append(self.stickerList.item(i).getJson())
 
+        return dataDict
+
+    def saveToFile(self, fileName):
         if fileName:
             with open(fileName, 'w') as file:
-                json.dump(dataDict, file, indent=4)
+                json.dump(self.getData(), file, indent=4)
                 self.currentFileName = fileName
 
     @QtCore.Slot()
     def exportFile(self):
-        print("Export PDF")
+        options = QtWidgets.QFileDialog.Options()
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export", "",
+                                                  "PDF Files (*.pdf)", options=options)
+        if fileName:
+            generateLabelSheets(self.getData(), fileName)
 
     @QtCore.Slot()
     def closeApp(self):

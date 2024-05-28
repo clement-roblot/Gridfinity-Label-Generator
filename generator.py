@@ -211,6 +211,12 @@ def generateTestLabel():
     # d.save_png('label.png')
 
 def getTextSize(text):
+
+    global defaultFont
+
+    if text == "":
+        return (0, 0)
+
     ascent, descent = defaultFont.getmetrics()
 
     text_width = defaultFont.getmask(text).getbbox()[2]
@@ -252,6 +258,7 @@ def generateLabel(label):
     l2PosX = ((widthPoints-l2Width)/2)
     verticalSpacing = ((heightPoints-l1Height-l2Height-lineWidth-lineWidth)/3)
 
+    global defaultFont
     d.text((l1PosX, verticalSpacing+lineWidth), label["textLine1"], font=defaultFont, fill=(0, 0, 0, 255))
     d.text((l2PosX, l1Height+(2*verticalSpacing)), label["textLine2"], font=defaultFont, fill=(0, 0, 0, 255))
 
@@ -286,7 +293,7 @@ def generateLabel(label):
     return img
 
 
-def generateLabelSheets(labelDataList):
+def generateLabelSheets(labelDataList, dstPath="out.pdf"):
 
     global defaultFont
     if "font" in labelDataList:
@@ -313,7 +320,7 @@ def generateLabelSheets(labelDataList):
             xOffset = margin
             yOffset += 500
 
-    outSheet.save("out.pdf", save_all=True)
+    outSheet.save(dstPath, save_all=True)
 
 if __name__ == '__main__':
 
