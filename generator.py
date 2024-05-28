@@ -12,7 +12,7 @@ from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Trsf, gp_Ax1
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
-from PIL import Image, ImageMorph, ImageFilter, ImageDraw, ImageFont
+from PIL import Image, ImageMorph, ImageFilter, ImageDraw, ImageFont, ImageOps
 import qrcode
 import os
 import cairosvg
@@ -57,30 +57,27 @@ def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
     return aCompound
 
-def makeLinesThicker(imagePath, thickness = 9):
-    img = Image.open(imagePath)
-    edges = img.filter(ImageFilter.FIND_EDGES)
+def makeLinesThicker(imagePath):
 
-    if thickness % 2 == 0:
-        thickness += 1
+    img = Image.open(imagePath)
+    img = img.convert("L")
+
+    edges = img.filter(ImageFilter.FIND_EDGES)
 
     # Remove 1px border around the image edges
     # Because the edge detection triggers on the edges of the image
-    cropped_edges = edges.crop((1, 1, edges.width - 1, edges.height - 1))
+    edges = edges.crop((1, 1, edges.width - 1, edges.height - 1))
 
-    fatEdges = cropped_edges.filter(ImageFilter.MaxFilter(thickness))
-    datas = fatEdges.getdata()
+    thickness = 5
+    matrix = [1] * thickness**2
 
-    newData = []
-    for item in datas:
-        if item[0] > 128:
-            newData.append((0, 0, 0, 255))
-        else:
-            newData.append((255, 255, 255, 255))
+    # Run twice becaus PIL doesn't allow kernels bigger than 5x5
+    edges = edges.filter(ImageFilter.Kernel((thickness, thickness), matrix, 1, 0))
+    edges = edges.filter(ImageFilter.Kernel((thickness, thickness), matrix, 1, 0))
 
-    fatEdges.putdata(newData)
+    edges = ImageOps.invert(edges)
 
-    return fatEdges
+    return edges
 
 def convert_angles_to_direction(alpha_deg, beta_deg):
     # Convert degrees to radians
@@ -96,6 +93,7 @@ def convert_angles_to_direction(alpha_deg, beta_deg):
     direction = gp_Dir(x, y, z)
 
     return direction
+
 
 def render3D(stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
@@ -169,7 +167,6 @@ def generateLabel(label):
     imagesHeight = (heightPoints - (2*imagesMargin))
 
     # Render the 3D model
-
     render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])   # 1.6s
 
     modelImage = makeLinesThicker("tmp3D.png")   # 0.49s
@@ -245,7 +242,7 @@ if __name__ == '__main__':
                 "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
                 "alpha": 120,
                 "beta": 87,
-                "hideObstructed": True
+                "hideObstructed": False
             },
             {
                 "width": 37,
@@ -260,7 +257,7 @@ if __name__ == '__main__':
                 "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
                 "alpha": 120,
                 "beta": 87,
-                "hideObstructed": True
+                "hideObstructed": False
             }
         ]
     })

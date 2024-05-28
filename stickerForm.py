@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from PIL import ImageQt
+import time
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 from sticker import Sticker
@@ -133,9 +134,9 @@ class StickerForm(QtWidgets.QWidget):
         orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = False
 
-        render3D(self.modelPath.text(), orientation, hideObstructed)
+        render3D(self.modelPath.text(), orientation, hideObstructed)    # 0.11s
 
-        img = makeLinesThicker("tmp3D.png")
+        img = makeLinesThicker("tmp3D.png") # 0.49s
 
         self.scene.clear()
 
