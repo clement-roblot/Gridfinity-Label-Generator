@@ -35,23 +35,25 @@ dpi = 300
 defaultFont = None
 
 def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
-    myAlgo = HLRBRep_Algo()
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), orientation))
-    myAlgo.Add(shape)
-    myAlgo.Projector(aProjector)
 
-    myAlgo.Update()
+    myAlgo = HLRBRep_Algo() # 0.00s
+
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), orientation)) # 0.00s
+    myAlgo.Add(shape) # 0.00s
+    myAlgo.Projector(aProjector) # 0.00s
+
+    myAlgo.Update() # 0.03s
 
     if hideObstructed:
-        myAlgo.Hide()       # Hide the obsructed lines (very slow!)
+        myAlgo.Hide()       # Hide the obsructed lines (very slow!) : 1.36s
 
-    aHLRToShape = HLRBRep_HLRToShape(myAlgo)
+    aHLRToShape = HLRBRep_HLRToShape(myAlgo) # 0.00s
 
-    aCompound = TopoDS_Compound()
-    aBuilder = BRep_Builder()
-    aBuilder.MakeCompound(aCompound)
-    aBuilder.Add(aCompound, aHLRToShape.VCompound())
-    aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())     # Is that useful?
+    aCompound = TopoDS_Compound() # 0.00s
+    aBuilder = BRep_Builder() # 0.00s
+    aBuilder.MakeCompound(aCompound) # 0.00s
+    aBuilder.Add(aCompound, aHLRToShape.VCompound()) # 0.00s
+    aBuilder.Add(aCompound, aHLRToShape.OutLineVCompound())     # Is that useful? 0.00s
 
     return aCompound
 
@@ -97,15 +99,17 @@ def convert_angles_to_direction(alpha_deg, beta_deg):
 
 def render3D(stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
-    stepReader = STEPControl_Reader()
-    stepReader.ReadFile(stepFile)
-    stepReader.TransferRoot()
-    myshape = stepReader.Shape()
+    start_time = time.time()
+
+    stepReader = STEPControl_Reader()       # 0.00s
+    stepReader.ReadFile(stepFile)       # 0.00s
+    stepReader.TransferRoot()       # 0.04s
+    myshape = stepReader.Shape()    # 0.00s
 
     try:
-        aCompound = renderAngle(myshape, orientation, hideObstructed)
-        renderer = UpdatedOffscreenRenderer()
-        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp3D.png")
+        aCompound = renderAngle(myshape, orientation, hideObstructed)   # 1.39
+        renderer = UpdatedOffscreenRenderer()   # 0.03s
+        renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp3D.png")    # 0.03s
     except ValueError:
         pass
 
@@ -165,16 +169,10 @@ def generateLabel(label):
     imagesHeight = (heightPoints - (2*imagesMargin))
 
     # Render the 3D model
-    start_time = time.time()
 
     render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])   # 1.6s
 
-    print("--- %s seconds 0 ---" % (time.time() - start_time))
-    start_time = time.time()
-
     modelImage = makeLinesThicker("tmp3D.png")   # 0.49s
-
-    print("--- %s seconds 1 ---" % (time.time() - start_time))
 
     modelImage.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
     img.paste(modelImage, (imagesMargin, imagesMargin))
