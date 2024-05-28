@@ -12,17 +12,29 @@ from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Trsf, gp_Ax1
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
-from PIL import Image, ImageMorph, ImageFilter
+from PIL import Image, ImageMorph, ImageFilter, ImageDraw, ImageFont
 import qrcode
+import os
+import cairosvg
+import svgwrite
+import math
+import sys
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPDF
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.units import mm
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 import time
 import math
 
+dpi = 300
+
+
 labelWidth = 370
 labelHeight = 130
-
-
 
 def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 30):
     # Add border to the label with rounded corners on top
@@ -55,8 +67,9 @@ def addText(d, textLine1, textLine2 = ""):
     # Add text to the label
     fontSize = 25
     marginFromCenter = 5
-    d.append(draw.Text(textLine1, fontSize, 0, -marginFromCenter, center=1))
-    d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1))
+    
+    d.append(draw.Text(textLine1, fontSize, 0, -marginFromCenter, center=1, style="font-family:Times New Roman"))
+    d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1, style="font-family:Times New Roman"))
 
 
 def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
@@ -179,7 +192,7 @@ def addQRCode(d, url, margin = 20):
     marginFromEdge = ((labelHeight-imageHeight)/2)
     d.append(draw.Image((labelWidth/2) - marginFromEdge - imageHeight, -imageHeight/2, imageHeight, imageHeight, "tmpQrCode.png"))
 
-def generateLabel():
+def generateTestLabel():
 
     # Create a new SVG drawing
     d = draw.Drawing(labelWidth, labelHeight, origin='center')
@@ -193,17 +206,90 @@ def generateLabel():
 
     addQRCode(d, "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6")
 
-    # Add text to the label
-    d.append(draw.Text("Hello World", 0, 0, 10, center=1))
-
     # Save the drawing to a file
     d.save_svg('label.svg')
+    # d.save_png('label.png')
 
-    # Save the drawing to a file
-    # d.savePng('label.png')
+def generateLabel(label):
 
+    widthPoints = int(label["width"] * dpi / 25.4)
+    heightPoints = int(label["height"] * dpi / 25.4)
+    txt = Image.new("RGB", size=(widthPoints, heightPoints), color=(255, 255, 255, 0))
+
+    # Draw the border
+    # img1 = ImageDraw.Draw(img)   
+    # img1.line(shape, fill ="none", width = 0) 
+
+    # Write the text
+    font = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
+    d = ImageDraw.Draw(txt)
+
+    d.text((10, 10), label["textLine1"], font=font, fill=(0, 0, 0, 255))
+
+    # txt.show()
+    return txt
+
+
+def generateLabelSheets(labelDataList):
+
+    labels = []
+    for label in labelDataList["stickerList"]:
+        labels.append(generateLabel(label))
+
+    sheetWidthPoints = int(labelDataList["pageWidth"] * dpi / 25.4)
+    sheetHeightPoints = int(labelDataList["pageHeight"] * dpi / 25.4)
+
+    outSheet = Image.new("RGB", size=(sheetWidthPoints, sheetHeightPoints), color=(255, 255, 255, 0))
+
+    margin = 50
+    xOffset = margin
+    yOffset = margin
+    for i, label in enumerate(labels):
+        outSheet.paste(label, (xOffset, yOffset))
+        xOffset += 200
+        if xOffset >= sheetWidthPoints:
+            xOffset = margin
+            yOffset += 200
+
+    outSheet.save("out.pdf", save_all=True)
 
 if __name__ == '__main__':
 
-    generateLabel()
+    # generateTestLabel()
+    generateLabelSheets({
+        "pageWidth": 210,
+        "pageHeight": 297,
+        "stickerList": [
+            {
+                "width": 37,
+                "height": 13,
+                "topLeftRoundedCorner": 4,
+                "topRightRoundedCorner": 4,
+                "bottomLeftRoundedCorner": 0,
+                "bottomRightRoundedCorner": 0,
+                "textLine1": "Stiky 1",
+                "textLine2": "Line2",
+                "qrCodeUrl": "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6",
+                "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
+                "alpha": 120,
+                "beta": 87,
+                "hideObstructed": True
+            },
+            {
+                "width": 37,
+                "height": 13,
+                "topLeftRoundedCorner": 4,
+                "topRightRoundedCorner": 4,
+                "bottomLeftRoundedCorner": 0,
+                "bottomRightRoundedCorner": 0,
+                "textLine1": "Kikoo",
+                "textLine2": "Salut",
+                "qrCodeUrl": "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6",
+                "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
+                "alpha": 120,
+                "beta": 87,
+                "hideObstructed": True
+            }
+        ]
+    })
     print("Done")

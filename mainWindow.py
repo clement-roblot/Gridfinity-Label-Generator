@@ -97,8 +97,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
         self.newSticker()
-        self.newSticker()
-        self.newSticker()
 
     @QtCore.Slot()
     def newFile(self):

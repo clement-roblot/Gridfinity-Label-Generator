@@ -16,9 +16,8 @@ class Sticker(QtWidgets.QListWidgetItem):
     qrCodeUrl = ""
     modelPath = "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP"
 
-    pitch = 0
-    roll = 0
-    yaw = 0
+    alpha = 180
+    beta = 180
     
     hideObstructed = True
 
@@ -36,9 +35,8 @@ class Sticker(QtWidgets.QListWidgetItem):
             self.textLine2 = jsonData["textLine2"]
             self.qrCodeUrl = jsonData["qrCodeUrl"]
             self.modelPath = jsonData["modelPath"]
-            self.pitch = jsonData["pitch"]
-            self.roll = jsonData["roll"]
-            self.yaw = jsonData["yaw"]
+            self.alpha = jsonData["alpha"]
+            self.beta = jsonData["beta"]
             self.hideObstructed = jsonData["hideObstructed"]
 
         self.valueChanged()
@@ -64,8 +62,7 @@ class Sticker(QtWidgets.QListWidgetItem):
             "textLine2": self.textLine2,
             "qrCodeUrl": self.qrCodeUrl,
             "modelPath": self.modelPath,
-            "pitch": self.pitch,
-            "roll": self.roll,
-            "yaw": self.yaw,
+            "alpha": self.alpha,
+            "beta": self.beta,
             "hideObstructed": self.hideObstructed
         }

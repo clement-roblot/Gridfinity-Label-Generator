@@ -88,7 +88,7 @@ class StickerForm(QtWidgets.QWidget):
         self.graphicsView = QtWidgets.QGraphicsView(self)
         self.scene = QtWidgets.QGraphicsScene(self)
         self.graphicsView.setScene(self.scene)
-        self.layout.addWidget(self.graphicsView, currentLayoutLine, 0, 4, 4)
+        self.layout.addWidget(self.graphicsView, currentLayoutLine, 0, 3, 4)
 
         # Load PNG image from disk (temporary)
         pixmap = QtGui.QPixmap("/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png")
@@ -96,28 +96,22 @@ class StickerForm(QtWidgets.QWidget):
         self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
         # 3d view controls
-        self.layout.addWidget(QtWidgets.QLabel("Pitch:"), currentLayoutLine, 4)
-        self.pitchSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
-        self.pitchSlider.valueChanged.connect(self.refresh3DViewQuick)
-        self.pitchSlider.sliderReleased.connect(self.refresh3DViewFull)
-        self.layout.addWidget(self.pitchSlider, currentLayoutLine, 5, 1, 2)
+        self.layout.addWidget(QtWidgets.QLabel("Alpha:"), currentLayoutLine, 4)
+        self.alphaSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=359, value=180)
+        self.alphaSlider.valueChanged.connect(self.refresh3DViewQuick)
+        self.alphaSlider.sliderReleased.connect(self.refresh3DViewFull)
+        self.layout.addWidget(self.alphaSlider, currentLayoutLine, 5, 1, 2)
         
-        self.layout.addWidget(QtWidgets.QLabel("Roll:"), currentLayoutLine+1, 4)
-        self.rollSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
-        self.rollSlider.valueChanged.connect(self.refresh3DViewQuick)
-        self.rollSlider.sliderReleased.connect(self.refresh3DViewFull)
-        self.layout.addWidget(self.rollSlider, currentLayoutLine+1, 5, 1, 2)
-
-        self.layout.addWidget(QtWidgets.QLabel("Yaw:"), currentLayoutLine+2, 4)
-        self.yawSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=360)
-        self.yawSlider.valueChanged.connect(self.refresh3DViewQuick)
-        self.yawSlider.sliderReleased.connect(self.refresh3DViewFull)
-        self.layout.addWidget(self.yawSlider, currentLayoutLine+2, 5, 1, 2)
+        self.layout.addWidget(QtWidgets.QLabel("Beta:"), currentLayoutLine+1, 4)
+        self.betaSlider = QtWidgets.QSlider(self, orientation=QtCore.Qt.Horizontal, minimum=0, maximum=359, value=180)
+        self.betaSlider.valueChanged.connect(self.refresh3DViewQuick)
+        self.betaSlider.sliderReleased.connect(self.refresh3DViewFull)
+        self.layout.addWidget(self.betaSlider, currentLayoutLine+1, 5, 1, 2)
 
         self.hideObstructedCheckbox = QtWidgets.QCheckBox(self, text="Hide obstructed lines", checked=True)
-        self.layout.addWidget(self.hideObstructedCheckbox, currentLayoutLine+3, 4, 1, 3)
-
-
+        self.layout.addWidget(self.hideObstructedCheckbox, currentLayoutLine+2, 4, 1, 3)
+        self.hideObstructedCheckbox.stateChanged.connect(self.refresh3DViewFull)
+        
     @QtCore.Slot()
     def selectModel(self):
         modelFilePaths = QtWidgets.QFileDialog.getOpenFileName(self, "Select 3D model", "", "3D model (*)")
@@ -137,7 +131,7 @@ class StickerForm(QtWidgets.QWidget):
         
         imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
         
-        orientation = convert_angles_to_direction(self.pitchSlider.value(), self.rollSlider.value())
+        orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = False
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
@@ -154,7 +148,7 @@ class StickerForm(QtWidgets.QWidget):
         
         imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
         
-        orientation = convert_angles_to_direction(self.pitchSlider.value(), self.rollSlider.value())
+        orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = self.hideObstructedCheckbox.isChecked()
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
@@ -186,9 +180,8 @@ class StickerForm(QtWidgets.QWidget):
         self.qrCodeUrl.setText(self.sticker.qrCodeUrl)
         self.modelPath.setText(self.sticker.modelPath)
 
-        self.pitchSlider.setValue(self.sticker.pitch)
-        self.rollSlider.setValue(self.sticker.roll)
-        self.yawSlider.setValue(self.sticker.yaw)
+        self.alphaSlider.setValue(self.sticker.alpha)
+        self.betaSlider.setValue(self.sticker.beta)
 
         self.hideObstructedCheckbox.setChecked(self.sticker.hideObstructed)
 
@@ -213,9 +206,8 @@ class StickerForm(QtWidgets.QWidget):
         self.sticker.qrCodeUrl = self.qrCodeUrl.text()
         self.sticker.modelPath = self.modelPath.text()
 
-        self.sticker.pitch = self.pitchSlider.value()
-        self.sticker.roll = self.rollSlider.value()
-        self.sticker.yaw = self.yawSlider.value()
+        self.sticker.alpha = self.alphaSlider.value()
+        self.sticker.beta = self.betaSlider.value()
 
         self.sticker.hideObstructed = self.hideObstructedCheckbox.isChecked()
 
