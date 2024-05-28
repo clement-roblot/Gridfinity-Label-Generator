@@ -135,8 +135,14 @@ class StickerForm(QtWidgets.QWidget):
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
 
+        img = makeLinesThicker("tmp3D.png")
+
         self.scene.clear()
-        self.scene.addPixmap(QtGui.QPixmap("tmp3D.png"))
+
+        self.imgQ = ImageQt.ImageQt(img)
+        pixMap = QtGui.QPixmap.fromImage(self.imgQ)
+        self.scene.addPixmap(pixMap)
+
         self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
     @QtCore.Slot()
