@@ -38,7 +38,11 @@ def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
     myAlgo = HLRBRep_Algo() # 0.00s
 
-    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), orientation)) # 0.00s
+
+    # orientation sets the orientation of the Z vector
+    # X and Y are automaticaly calculated but those are the ones going crazy
+    # this is why we set the X dir to be fixed to gp_Dir(1., 0., 0.)
+    aProjector = HLRAlgo_Projector(gp_Ax2(gp_Pnt(0., 0, 0), orientation, gp_Dir(1., 0., 0.))) # 0.00s
     myAlgo.Add(shape) # 0.00s
     myAlgo.Projector(aProjector) # 0.00s
 
