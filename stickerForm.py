@@ -1,8 +1,9 @@
 from PySide6 import QtCore, QtWidgets, QtGui
+from PIL import ImageQt
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
 from sticker import Sticker
-from generator import render3D, convert_angles_to_direction, keying, makeLinesThicker
+from generator import render3D, convert_angles_to_direction, makeLinesThicker
 
 
 class StickerForm(QtWidgets.QWidget):
@@ -128,16 +129,14 @@ class StickerForm(QtWidgets.QWidget):
 
         if self.modelPath.text() == "":
             return
-        
-        imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
-        
+                
         orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = False
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
 
         self.scene.clear()
-        self.scene.addPixmap(QtGui.QPixmap(imagePath))
+        self.scene.addPixmap(QtGui.QPixmap("tmp3D.png"))
         self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
     @QtCore.Slot()
@@ -145,19 +144,20 @@ class StickerForm(QtWidgets.QWidget):
 
         if self.modelPath.text() == "":
             return
-        
-        imagePath = "/home/karlito/creation/gridfinity/labelGenerator/tmp3D.png"
-        
+                
         orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = self.hideObstructedCheckbox.isChecked()
 
         render3D(self.modelPath.text(), orientation, hideObstructed)
 
-        keying("tmp3D.png")
-        makeLinesThicker("tmp3D.png")
+        img = makeLinesThicker("tmp3D.png")
 
         self.scene.clear()
-        self.scene.addPixmap(QtGui.QPixmap(imagePath))
+
+        self.imgQ = ImageQt.ImageQt(img)
+        pixMap = QtGui.QPixmap.fromImage(self.imgQ)
+        self.scene.addPixmap(pixMap)
+
         self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
     def loadData(self, sticker):
