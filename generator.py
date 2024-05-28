@@ -6,30 +6,17 @@ from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Dir
 from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.STEPControl import STEPControl_Reader
-from OCC.Display.SimpleGui import init_display
-from OCC.Core.TopAbs import TopAbs_FORWARD
 from OCC.Core.TopoDS import TopoDS_Compound
 from OCC.Core.BRep import BRep_Builder
-from OCC.Core.gp import gp_Trsf, gp_Ax1
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
-from PIL import Image, ImageMorph, ImageFilter, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageFilter, ImageDraw, ImageFont, ImageOps
 import qrcode
 import os
-import cairosvg
-import svgwrite
 import math
 import sys
 import time
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPDF
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.units import mm
+import json
 
 from updatedOffscreenRenderer import UpdatedOffscreenRenderer
-import time
-import math
 
 dpi = 300
 defaultFont = None
@@ -37,7 +24,6 @@ defaultFont = None
 def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
     myAlgo = HLRBRep_Algo() # 0.00s
-
 
     # orientation sets the orientation of the Z vector
     # X and Y are automaticaly calculated but those are the ones going crazy
@@ -145,6 +131,7 @@ def generateLabel(label):
 
     lineWidth = 10
     hl = lineWidth/2
+    print(f"top left {topLeftRoundedCorner}")
     d.line([(topLeftRoundedCorner, hl), (widthPoints-topRightRoundedCorner, hl)] , fill="black", width=lineWidth) 
     d.line([(widthPoints-hl, topRightRoundedCorner), (widthPoints-hl, heightPoints - bottomRightRoundedCorner)] , fill="black", width=lineWidth) 
     d.line([(widthPoints - bottomRightRoundedCorner, heightPoints-hl), (bottomLeftRoundedCorner, heightPoints-hl)] , fill="black", width=lineWidth) 
@@ -228,41 +215,14 @@ def generateLabelSheets(labelDataList, dstPath="out.pdf"):
 
 if __name__ == '__main__':
 
-    generateLabelSheets({
-        "pageWidth": 210,
-        "pageHeight": 297,
-        "font": "/usr/share/fonts/truetype/msttcorefonts/times.ttf",
-        "stickerList": [
-            {
-                "width": 37,
-                "height": 13,
-                "topLeftRoundedCorner": 4,
-                "topRightRoundedCorner": 4,
-                "bottomLeftRoundedCorner": 0,
-                "bottomRightRoundedCorner": 0,
-                "textLine1": "Stiky 1",
-                "textLine2": "Line2",
-                "qrCodeUrl": "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6",
-                "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
-                "alpha": 120,
-                "beta": 87,
-                "hideObstructed": False
-            },
-            {
-                "width": 37,
-                "height": 13,
-                "topLeftRoundedCorner": 4,
-                "topRightRoundedCorner": 4,
-                "bottomLeftRoundedCorner": 0,
-                "bottomRightRoundedCorner": 0,
-                "textLine1": "Kikoo",
-                "textLine2": "Salut",
-                "qrCodeUrl": "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6",
-                "modelPath": "/home/karlito/creation/gridfinity/labelGenerator/meca/91028A411_JIS Hex Nut.STEP",
-                "alpha": 120,
-                "beta": 87,
-                "hideObstructed": False
-            }
-        ]
-    })
+    if len(sys.argv) != 2:
+        print("Usage: python3 generator.py <config file>")
+        sys.exit(1)
+
+    config_file = sys.argv[1]
+    with open(config_file, 'r') as file:
+        config_data = json.load(file)
+    
+        generateLabelSheets(config_data)
+
     print("Done")
