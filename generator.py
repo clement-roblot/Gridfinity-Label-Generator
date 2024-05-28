@@ -19,6 +19,7 @@ import cairosvg
 import svgwrite
 import math
 import sys
+import time
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPDF
 from reportlab.pdfgen import canvas
@@ -32,45 +33,6 @@ import math
 
 dpi = 300
 defaultFont = None
-
-labelWidth = 370
-labelHeight = 130
-
-def addBorder(d, strokeSize = 4, margin = 5, topCornerRadius = 30):
-    # Add border to the label with rounded corners on top
-    d.append(draw.Lines(-labelWidth/2 + margin + topCornerRadius, -labelHeight/2 + margin,
-                        labelWidth/2 - margin - topCornerRadius, -labelHeight/2 + margin,
-                        close=False,
-                fill='none',
-                stroke='black',
-                stroke_width=strokeSize))
-    
-    d.append(draw.Lines(labelWidth/2 - margin, -labelHeight/2 + margin + topCornerRadius,
-                        labelWidth/2 - margin, labelHeight/2 - margin,
-                        -labelWidth/2 + margin, labelHeight/2 - margin,
-                        -labelWidth/2 + margin, -labelHeight/2 + margin + topCornerRadius,
-                        close=False,
-                fill='none',
-                stroke='black',
-                stroke_width=strokeSize))
-    
-    d.append(draw.ArcLine(-labelWidth/2 + margin + topCornerRadius, -labelHeight/2 + margin + topCornerRadius,
-                          topCornerRadius, 90, 180,
-        stroke='black', stroke_width=strokeSize, fill='none'))
-    
-    d.append(draw.ArcLine(labelWidth/2 - margin - topCornerRadius, -labelHeight/2 + margin + topCornerRadius,
-                          topCornerRadius, 0, 90,
-        stroke='black', stroke_width=strokeSize, fill='none'))
-
-
-def addText(d, textLine1, textLine2 = ""):
-    # Add text to the label
-    fontSize = 25
-    marginFromCenter = 5
-    
-    d.append(draw.Text(textLine1, fontSize, 0, -marginFromCenter, center=1, style="font-family:Times New Roman"))
-    d.append(draw.Text(textLine2, fontSize, 0, marginFromCenter+fontSize, center=1, style="font-family:Times New Roman"))
-
 
 def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
     myAlgo = HLRBRep_Algo()
@@ -93,23 +55,6 @@ def renderAngle(shape, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
 
     return aCompound
 
-
-def keying(imagePath, keyColor = (255, 255, 255)):
-    img = Image.open(imagePath)
-    img = img.convert("RGBA")
-    datas = img.getdata()
-
-    tolerance = 10
-    newData = []
-    for item in datas:
-        if item[0] in range(keyColor[0]-tolerance, keyColor[0]+tolerance) and item[1] in range(keyColor[1]-tolerance, keyColor[1]+tolerance) and item[2] in range(keyColor[2]-tolerance, keyColor[2]+tolerance):
-            newData.append((255, 255, 255, 0))
-        else:
-            newData.append(item)
-
-    img.putdata(newData)
-    img.save(imagePath, "PNG")
-
 def makeLinesThicker(imagePath, thickness = 9):
     img = Image.open(imagePath)
     edges = img.filter(ImageFilter.FIND_EDGES)
@@ -117,18 +62,23 @@ def makeLinesThicker(imagePath, thickness = 9):
     if thickness % 2 == 0:
         thickness += 1
 
-    fatEdges = edges.filter(ImageFilter.MaxFilter(thickness))
+    # Remove 1px border around the image edges
+    # Because the edge detection triggers on the edges of the image
+    cropped_edges = edges.crop((1, 1, edges.width - 1, edges.height - 1))
+
+    fatEdges = cropped_edges.filter(ImageFilter.MaxFilter(thickness))
     datas = fatEdges.getdata()
 
     newData = []
     for item in datas:
-        if item[3] > 128:
+        if item[0] > 128:
             newData.append((0, 0, 0, 255))
         else:
-            newData.append(item)
+            newData.append((255, 255, 255, 255))
 
     fatEdges.putdata(newData)
-    fatEdges.save(imagePath, "PNG")
+
+    return fatEdges
 
 def convert_angles_to_direction(alpha_deg, beta_deg):
     # Convert degrees to radians
@@ -158,57 +108,6 @@ def render3D(stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True):
         renderer.DisplayShape(aCompound, color="Black", transparency=True, dump_image_path='.', dump_image_filename="tmp3D.png")
     except ValueError:
         pass
-
-def add3D(d, stepFile, orientation = gp_Dir(1., 0., 0.), hideObstructed = True, margin = 10):
-
-    render3D(stepFile, orientation, hideObstructed)
-
-    keying("tmp3D.png")
-
-    makeLinesThicker("tmp3D.png")
-
-    # Add the rendered image to the label
-    imageHeight = (labelHeight-2*margin)
-    d.append(draw.Image(-(labelWidth/2) + margin, -(labelHeight/2) + margin, imageHeight, imageHeight, "tmp3D.png"))
-
-
-def addQRCode(d, url, margin = 20):
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=0,
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    img.save("tmpQrCode.png")
-
-    keying("tmpQrCode.png")
-
-    # Add the rendered image to the label
-    imageHeight = (labelHeight-1.5*margin)
-    marginFromEdge = ((labelHeight-imageHeight)/2)
-    d.append(draw.Image((labelWidth/2) - marginFromEdge - imageHeight, -imageHeight/2, imageHeight, imageHeight, "tmpQrCode.png"))
-
-def generateTestLabel():
-
-    # Create a new SVG drawing
-    d = draw.Drawing(labelWidth, labelHeight, origin='center')
-
-    # Add border to the label
-    addBorder(d)
-
-    addText(d, "M3", "Nuts")
-
-    add3D(d, "./meca/91028A411_JIS Hex Nut.STEP", gp_Dir(0., -1., -1.), True)
-
-    addQRCode(d, "https://homebox.fly.dev/item/70017760-264e-449f-b0bf-056b349b9bf6")
-
-    # Save the drawing to a file
-    d.save_svg('label.svg')
-    # d.save_png('label.png')
 
 def getTextSize(text):
 
@@ -266,13 +165,19 @@ def generateLabel(label):
     imagesHeight = (heightPoints - (2*imagesMargin))
 
     # Render the 3D model
-    render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])
-    keying("tmp3D.png")
-    makeLinesThicker("tmp3D.png")
+    start_time = time.time()
 
-    modelImage = Image.open("tmp3D.png")
+    render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])   # 1.6s
+
+    print("--- %s seconds 0 ---" % (time.time() - start_time))
+    start_time = time.time()
+
+    modelImage = makeLinesThicker("tmp3D.png")   # 0.49s
+
+    print("--- %s seconds 1 ---" % (time.time() - start_time))
+
     modelImage.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
-    img.paste(modelImage, (imagesMargin, imagesMargin), mask=modelImage)
+    img.paste(modelImage, (imagesMargin, imagesMargin))
 
     # Draw the QR code
     # box_size is the pixel size of each square of the QR code
@@ -324,7 +229,6 @@ def generateLabelSheets(labelDataList, dstPath="out.pdf"):
 
 if __name__ == '__main__':
 
-    # generateTestLabel()
     generateLabelSheets({
         "pageWidth": 210,
         "pageHeight": 297,
