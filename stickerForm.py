@@ -194,6 +194,8 @@ class StickerForm(QtWidgets.QWidget):
 
         self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
 
+        self.refresh3DViewFull()
+
 
     def saveData(self):
 
