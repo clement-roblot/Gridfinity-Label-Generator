@@ -131,7 +131,6 @@ def generateLabel(label):
 
     lineWidth = 10
     hl = lineWidth/2
-    print(f"top left {topLeftRoundedCorner}")
     d.line([(topLeftRoundedCorner, hl), (widthPoints-topRightRoundedCorner, hl)] , fill="black", width=lineWidth) 
     d.line([(widthPoints-hl, topRightRoundedCorner), (widthPoints-hl, heightPoints - bottomRightRoundedCorner)] , fill="black", width=lineWidth) 
     d.line([(widthPoints - bottomRightRoundedCorner, heightPoints-hl), (bottomLeftRoundedCorner, heightPoints-hl)] , fill="black", width=lineWidth) 
@@ -205,12 +204,14 @@ def generateLabelSheets(labelDataList, dstPath="out.pdf"):
     margin = 50
     xOffset = margin
     yOffset = margin
-    for i, label in enumerate(labels):
+    for label in labels:
+
+        if xOffset + label.width > sheetWidthPoints - margin:
+            xOffset = margin
+            yOffset += label.height + margin
+
         outSheet.paste(label, (xOffset, yOffset))
         xOffset += 500
-        if xOffset >= sheetWidthPoints:
-            xOffset = margin
-            yOffset += 500
 
     outSheet.save(dstPath, save_all=True)
 
