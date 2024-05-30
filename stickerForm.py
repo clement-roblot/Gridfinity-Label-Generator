@@ -1,9 +1,6 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from PIL import ImageQt
-import time
 
-from updatedOffscreenRenderer import UpdatedOffscreenRenderer
-from sticker import Sticker
 from generator import render3D, convert_angles_to_direction, makeLinesThicker
 
 

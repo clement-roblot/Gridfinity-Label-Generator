@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import drawsvg as draw
 from OCC.Core.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
 from OCC.Core.HLRAlgo import HLRAlgo_Projector
 from OCC.Core.gp import gp_Ax2, gp_Pnt, gp_Dir

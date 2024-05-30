@@ -4,12 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-cairosvg = "*"
-pycairo = "*"
-drawsvg = "*"
 pillow = "*"
 pyside6 = "*"
-pyqtdarktheme = "*"
+qrcode = "*"
 
 [dev-packages]
 
