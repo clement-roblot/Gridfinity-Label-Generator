@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from PIL import ImageQt
+import os
 
 from generator import render3D, convert_angles_to_direction, makeLinesThicker
 
@@ -125,9 +126,9 @@ class StickerForm(QtWidgets.QWidget):
     @QtCore.Slot()
     def refresh3DViewQuick(self):
 
-        if self.modelPath.text() == "":
+        if not os.path.exists(self.modelPath.text()):
             return
-                
+       
         orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = False
 
@@ -146,9 +147,9 @@ class StickerForm(QtWidgets.QWidget):
     @QtCore.Slot()
     def refresh3DViewFull(self):
 
-        if self.modelPath.text() == "":
+        if not os.path.exists(self.modelPath.text()):
             return
-                
+
         orientation = convert_angles_to_direction(self.alphaSlider.value(), self.betaSlider.value())
         hideObstructed = self.hideObstructedCheckbox.isChecked()
 
