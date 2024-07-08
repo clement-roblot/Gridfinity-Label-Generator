@@ -36,13 +36,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Save File Action
         saveAction = QtGui.QAction("&Save", self)
-        saveAction.setShortcut("Ctrl+Shift+S")
+        saveAction.setShortcut("Ctrl+S")
         saveAction.triggered.connect(self.saveFile)
         fileMenu.addAction(saveAction)
 
         # Save as File Action
         saveAction = QtGui.QAction("&Save as...", self)
-        saveAction.setShortcut("Ctrl+S")
+        saveAction.setShortcut("Ctrl+Shift+S")
         saveAction.triggered.connect(self.saveAsFile)
         fileMenu.addAction(saveAction)
 
