@@ -1,7 +1,7 @@
 # Gridfinity bin sticker generator
 This project aims at building a sticker generator exported as a pdf of stickers that you can then print on a regular printer.
 
-The "killer" feature of this project is to use the [OpenCascade](https://www.opencascade.com/) to render the 3d view of the object stored in the bin.
+The "killer" feature of this project is the use of [OpenCascade](https://www.opencascade.com/) to dynamicaly render the 3d view of the object showed on the sticker.
 
 ## Install
 How to build the proper environnement:
