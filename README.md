@@ -29,24 +29,22 @@ python main.py
 
 ## Finding 3d models
 
-Its great to be able to make nice stickers from 3d models but I'm not gonna model all the screw size I got for this. Not to worry, the internet is full of 3d models for most mechanical things. An amazing resource for this is [McMaster-Carr](https://www.mcmaster.com/) where you can find the step files of basicaly everything mechanical.
+Its great to be able to make nice stickers from 3d models, but I'm not gonna model all the screw sizes I have for this thing. Not to worry, the internet is full of 3d models for most mechanical things. An amazing resource for this is [McMaster-Carr](https://www.mcmaster.com/) where you can find the step files of basicaly everything mechanical.
 
 The meca folder contains a step file as exmemple, it is taken from [here](https://grabcad.com/library/ph-philips-sscrew-1).
 
 ## Additional customization
 
-You can edit the json with the details of your stickers and them render it manually with the command:
+You can edit the json with the details of your stickers and then render it manually with the command:
 
 ```bash
 python generator.py exempleSheet.json
 ```
+A few advanced features are not accessible in the GUI like the page size in mm.
 
+### Fonts
 You can also add a font parameter to specify the font used to render the texts, for example:
 
 ```bash
 "font": "/usr/share/fonts/truetype/msttcorefonts/times.ttf",
 ```
-
-## GUI VS CLI
-
-A few advanced features are not accessible in the GUI like the page size in mm.
