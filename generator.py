@@ -157,12 +157,15 @@ def generateLabel(label):
 
     # Render the 3D model
     if os.path.exists(label["modelPath"]):
-        render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])   # 1.6s
+        try:
+            render3D(label["modelPath"], convert_angles_to_direction(label["alpha"], label["beta"]), label["hideObstructed"])   # 1.6s
 
-        modelImage = makeLinesThicker("tmp3D.png")   # 0.49s
+            modelImage = makeLinesThicker("tmp3D.png")   # 0.49s
 
-        modelImage.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
-        img.paste(modelImage, (imagesMargin, imagesMargin))
+            modelImage.thumbnail((imagesHeight, imagesHeight), Image.Resampling.LANCZOS)
+            img.paste(modelImage, (imagesMargin, imagesMargin))
+        except FileNotFoundError:
+            pass
 
     # Draw the QR code
     # box_size is the pixel size of each square of the QR code
