@@ -16,6 +16,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.setWindowIcon(QtGui.QIcon("resources/icon.svg"))
+
         self.mainWidget = QtWidgets.QSplitter(self)
         self.setCentralWidget(self.mainWidget)
 
